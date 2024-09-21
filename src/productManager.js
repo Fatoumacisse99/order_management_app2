@@ -14,16 +14,6 @@ async function getProducts() {
 }
 
 async function addProduct(name, description, price, stock, category, barcode, status) {
-  if (!name || price === undefined || stock === undefined) {
-    throw new Error("Les champs nom, prix et stock sont obligatoires.");
-  }
-  if (isNaN(price) || isNaN(stock)) {
-    throw new Error("Le prix et la quantité en stock doivent être des nombres.");
-  }
-  if (price <= 0 || stock < 0) {
-    throw new Error("Le prix doit être supérieur à zéro et le stock ne peut pas être négatif.");
-  }
-
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.execute(
@@ -40,22 +30,6 @@ async function addProduct(name, description, price, stock, category, barcode, st
 }
 
 async function updateProduct(id, name, description, price, stock, category, barcode, status) {
-  // Vérifier si le produit existe avant de le mettre à jour
-  if (!(await productExists(id))) {
-    throw new Error(`Aucun produit trouvé avec l'ID ${id}.`);
-  }
-
-  // Validation des données
-  if (!name || price === undefined || stock === undefined) {
-    throw new Error("Les champs nom, prix et stock sont obligatoires.");
-  }
-  if (isNaN(price) || isNaN(stock)) {
-    throw new Error("Le prix et la quantité en stock doivent être des nombres.");
-  }
-  if (price <= 0 || stock < 0) {
-    throw new Error("Le prix doit être supérieur à zéro et le stock ne peut pas être négatif.");
-  }
-
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.execute(
