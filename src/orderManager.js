@@ -1,5 +1,5 @@
 const pool = require("./db");
-
+const customerModule = require("./customerManager");
 async function getOrders() {
   const connection = await pool.getConnection();
   try {
@@ -41,17 +41,12 @@ async function addOrder(date, customer_id, delivery_address, track_number, statu
 }
 
 async function updateOrder(id, date, customer_id, delivery_address, track_number, status) {
-  if (!date || !customer_id || !delivery_address || !track_number || !status) {
-    throw new Error("Tous les champs (date, customer_id, delivery_address, track_number, status) sont obligatoires.");
+  if (!(await customerModule.customerExists(customer_id))) {
+    throw new Error("Erreur : Le client avec cet ID n'existe pas.");
   }
-  if (isNaN(Date.parse(date))) {
-    throw new Error("La date fournie n'est pas valide.");
-  }
-
   if (!(await orderExists(id))) {
     throw new Error(`Erreur : la commande avec l'ID ${id} n'existe pas.`);
   }
-
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.execute(
@@ -78,12 +73,16 @@ async function deleteOrder(id) {
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.execute("DELETE FROM purchase_orders WHERE id = ?", [id]);
+    
     if (result.affectedRows === 0) {
       throw new Error(`Aucune commande trouvée avec l'ID ${id}.`);
     }
-    return result.affectedRows;
   } catch (error) {
-    console.error("Erreur lors de la suppression de la commande :", error.message);
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      console.error("Erreur : Impossible de supprimer cette commande car elle est associée à des paiements.");
+    } else {
+      console.error("Erreur lors de la suppression de la commande :", error.message);
+    }
     throw error;
   } finally {
     connection.release();
@@ -205,7 +204,7 @@ async function destroyOrderDetail(id) {
   try {
     const [detail] = await connection.execute("SELECT * FROM order_details WHERE id = ?", [id]);
     if (!detail.length) {
-      throw new Error("Le détail de commande spécifié n'existe pas.");
+      throw new Error("Erreur : Le détail de commande spécifié n'existe pas.");
     }
 
     await connection.execute("DELETE FROM order_details WHERE id = ?", [id]);
