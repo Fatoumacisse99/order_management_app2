@@ -12,6 +12,21 @@ async function getProducts() {
     connection.release();
   }
 }
+async function getProductById(productId) {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.execute("SELECT * FROM products WHERE id = ?", [productId]);
+    if (rows.length === 0) {
+      throw new Error("Produit non trouvé");
+    }
+    return rows[0];
+  } catch (error) {
+    console.error("Erreur lors de la récupération du produit :", error.message);
+    throw new Error("Erreur lors de la récupération du produit.");
+  } finally {
+    connection.release();
+  }
+}
 
 async function addProduct(name, description, price, stock, category, barcode, status) {
   const connection = await pool.getConnection();
@@ -28,7 +43,6 @@ async function addProduct(name, description, price, stock, category, barcode, st
     connection.release();
   }
 }
-
 async function updateProduct(id, name, description, price, stock, category, barcode, status) {
   const connection = await pool.getConnection();
   try {
@@ -47,9 +61,7 @@ async function updateProduct(id, name, description, price, stock, category, barc
     connection.release();
   }
 }
-
 async function destroyProduct(id) {
-  // Vérifier si le produit existe avant de le supprimer
   if (!(await productExists(id))) {
     throw new Error(`Aucun produit trouvé avec l'ID ${id}.`);
   }
@@ -84,7 +96,7 @@ async function productExists(id) {
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.execute("SELECT COUNT(*) as count FROM products WHERE id = ?", [id]);
-    return rows[0].count > 0; // Renvoie vrai si le produit existe
+    return rows[0].count > 0; 
   } catch (error) {
     console.error("Erreur lors de la vérification de l'existence du produit :", error.message);
     throw new Error("Erreur lors de la vérification de l'existence du produit.");
@@ -93,4 +105,4 @@ async function productExists(id) {
   }
 }
 
-module.exports = { getProducts, addProduct, updateProduct, destroyProduct, productExists };
+module.exports = { getProducts, addProduct, updateProduct, destroyProduct, productExists,getProductById };

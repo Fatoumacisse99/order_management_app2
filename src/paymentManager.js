@@ -1,6 +1,4 @@
 const pool = require("./db");
-
-// Fonction pour vérifier si une commande existe dans la base de données
 async function orderExists(order_id) {
   const connection = await pool.getConnection();
   try {
@@ -13,8 +11,6 @@ async function orderExists(order_id) {
     connection.release();
   }
 }
-
-// Fonction pour ajouter un paiement avec validation de la commande
 async function addPayment(order_id, date, amount, payment_method, status) {
   const connection = await pool.getConnection();
   try {
@@ -30,7 +26,6 @@ async function addPayment(order_id, date, amount, payment_method, status) {
     connection.release();
   }
 }
-// Fonction pour récupérer tous les paiements
 async function getPayments() {
   const connection = await pool.getConnection();
   try {
@@ -43,8 +38,6 @@ async function getPayments() {
     connection.release();
   }
 }
-
-// Fonction pour mettre à jour un paiement
 async function updatePayment(id, order_id, date, amount, payment_method, status) {
   const connection = await pool.getConnection();
   try {
@@ -63,8 +56,6 @@ async function updatePayment(id, order_id, date, amount, payment_method, status)
     connection.release();
   }
 }
-
-// Fonction pour supprimer un paiement
 async function destroyPayment(id) {
   if (!id) {
     throw new Error("ID obligatoire pour supprimer un paiement.");
